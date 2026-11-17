@@ -2,6 +2,16 @@
 
 OpenIDEA opens `.md` and `.markdown` in Live Preview. Click prose, code, or an empty list item to edit at the caret. In prose, **Enter** starts a paragraph or continues a list. **Shift+Enter** inserts a Markdown line break. **↑ / ↓** move between visible lines and blocks. Use **Open as Text** to edit Markdown markup directly.
 
+## Demo
+
+[Watch the 21-second demo at 0.75× (MP4)](docs/media/live-preview-075x.mp4).
+
+![A checklist, an editable table, and two selected Markdown paragraphs in OpenIDEA](docs/media/block-selection.png)
+
+![A second Markdown tab at the shared zoom level, with a shortcuts table and highlighted JSON](docs/media/shared-zoom.png)
+
+## Editing
+
 Type **/** in an empty paragraph to insert a code block, table, or checklist. Type to filter and choose with **↑ / ↓** and **Enter**. In a code block, **⌘Enter / Ctrl+Enter** starts a paragraph after it. You can also click the blank area below a final code block.
 
 In a list, **Tab** nests the current item under the previous one and **Shift+Tab** moves it out one level. Type **`[]`** or **`- [ ]`** and press **Space** to start a checklist item. The same key converts list, heading, and quote markers as you type.
