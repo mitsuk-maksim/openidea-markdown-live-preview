@@ -4,7 +4,7 @@ OpenIDEA opens `.md` and `.markdown` in Live Preview. Click prose, code, or an e
 
 ## Demo
 
-[Watch the 21-second demo at 0.75× (MP4)](docs/media/live-preview-075x.mp4).
+https://github.com/user-attachments/assets/63239286-f0fd-4f23-b7a8-bbe371a725af
 
 ![A checklist, an editable table, and two selected Markdown paragraphs in OpenIDEA](docs/media/block-selection.png)
 
