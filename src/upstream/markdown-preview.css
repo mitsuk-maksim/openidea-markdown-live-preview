@@ -1,0 +1,167 @@
+/* OpenIDEA v0.1.46, Markdown.module.css. Apache-2.0. See NOTICE. */
+.preview {
+  flex: 1 1 50%;
+  min-width: 0;
+  position: relative;
+  overflow: auto;
+  /* Positions are restored and synced by source line; Chromium's scroll anchoring
+     would keep a later block in view while images above it load. */
+  overflow-anchor: none;
+  padding: 16px 28px 40vh;
+  outline: none;
+  /* The preview sits on the editor background, so its text comes from the
+     editor scheme: with a light UI theme + dark editor scheme, the UI's
+     --fg would be black-on-black here. */
+  background: var(--bg-editor, var(--bg-app));
+  color: var(--fg-editor, var(--fg));
+  font-family: var(--font-ui);
+  font-size: calc(var(--markdown-preview-font-size, 14px) + var(--markdown-font-zoom, 0px));
+  line-height: 1.6;
+  overflow-wrap: break-word;
+}
+.preview h1,
+.preview h2 {
+  padding-bottom: 0.3em;
+  border-bottom: 1px solid var(--border-strong);
+}
+.preview h1,
+.preview h2,
+.preview h3,
+.preview h4,
+.preview h5,
+.preview h6 {
+  margin: 1.2em 0 0.6em;
+  color: var(--fg-editor, var(--fg-strong));
+  line-height: 1.25;
+}
+.preview h1 {
+  font-size: 1.9em;
+}
+.preview h2 {
+  font-size: 1.5em;
+}
+.preview h3 {
+  font-size: 1.25em;
+}
+.preview > div:first-child > :first-child {
+  margin-top: 0;
+}
+.preview p,
+.preview ul,
+.preview ol,
+.preview blockquote,
+.preview pre,
+.preview table {
+  margin: 0 0 1em;
+}
+.preview a {
+  color: var(--link);
+  text-decoration: none;
+  cursor: pointer;
+}
+.preview a:hover {
+  color: var(--link-hover);
+  text-decoration: underline;
+}
+.preview code {
+  font-family: var(--font-mono);
+  font-size: 0.9em;
+  padding: 0.1em 0.35em;
+  border-radius: var(--radius-small);
+  background: var(--bg-editor-inline, var(--bg-elev));
+}
+.preview pre {
+  padding: 10px 12px;
+  border-radius: var(--radius-control);
+  background: var(--bg-editor-inline, var(--bg-elev));
+  overflow: auto;
+  line-height: 1.45;
+}
+.preview pre code {
+  padding: 0;
+  background: none;
+  font-size: 0.93em;
+}
+.preview blockquote {
+  padding: 0 1em;
+  border-left: 3px solid var(--border-strong);
+  color: var(--fg-editor, var(--fg-secondary));
+  opacity: 0.8;
+}
+.preview table {
+  border-collapse: collapse;
+}
+.preview th,
+.preview td {
+  padding: 4px 10px;
+  border: 1px solid var(--border-strong);
+}
+.preview th {
+  background: var(--bg-editor-inline, var(--bg-elev));
+}
+.preview hr {
+  border: none;
+  border-top: 1px solid var(--border-strong);
+  margin: 1.5em 0;
+}
+.preview img {
+  max-width: calc(100% * var(--markdown-zoom-scale, 1));
+}
+.preview img[data-natural-width] {
+  width: calc(min(var(--image-width), 100%) * var(--markdown-zoom-scale, 1));
+  height: auto;
+}
+.preview ul.contains-task-list {
+  list-style: none;
+  padding-left: 1.2em;
+}
+.blocked {
+  display: inline-block;
+  min-width: 16px;
+  min-height: 16px;
+  outline: 1px dashed var(--border-strong);
+}
+
+/* Mermaid diagrams: the source stays until the diagram is drawn, and next to an error. */
+.preview [data-mermaid] {
+  position: relative;
+  margin: 0 0 1em;
+}
+.preview [data-mermaid] > pre {
+  margin: 0;
+}
+.preview [data-mermaid-state="ok"] > pre {
+  display: none;
+}
+.preview .mermaid-output {
+  overflow-x: auto;
+  overflow-y: hidden;
+  text-align: center;
+}
+.preview .mermaid-output svg[data-natural-width] {
+  display: block;
+  margin: 0 auto;
+  width: calc(min(var(--diagram-width), 100%) * var(--markdown-zoom-scale, 1));
+  height: auto;
+}
+.preview .mermaid-output[data-zoomed="true"] {
+  overflow: hidden;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+}
+.preview .mermaid-output[data-dragging="true"] {
+  cursor: grabbing;
+}
+.preview [data-mermaid-state="error"] > .mermaid-output {
+  margin-top: 6px;
+  padding: 6px 10px;
+  border-left: 3px solid var(--danger);
+  border-radius: var(--radius-small);
+  background: var(--bg-elev);
+  color: var(--danger);
+  font-family: var(--font-mono);
+  font-size: var(--fs-code);
+  text-align: left;
+  white-space: pre-wrap;
+}

@@ -1,0 +1,21 @@
+id = "memitsuk.markdown-live-preview"
+name = "Markdown Live Preview"
+version = "0.5.26"
+description = "Edit Markdown in one pane with OpenIDEA's preview rendering."
+authors = ["memitsuk"]
+categories = ["tools"]
+engines.openidea = "^1.9"
+wasm = "native/link.wasm"
+activation = ["on-view:live-preview"]
+
+[capabilities]
+required = ["editor.read", "editor.write"]
+optional = ["project.read"]
+
+[[contributes.customEditors]]
+id = "live-preview"
+title = "Markdown Live Preview"
+patterns = ["*.md", "*.markdown"]
+priority = "default"
+layout = "tab"
+web = "web/index.html"
