@@ -1,0 +1,16 @@
+openidea-render.ts includes the Markdown preview renderer from OpenIDEA v0.1.46.
+Source: https://github.com/l0ng-ai/openidea/blob/v0.1.46/src/features/viewers/markdown/render.ts
+Licensed under the Apache License, Version 2.0.
+Changes: the host-specific link resolution and scrolling helpers are omitted.
+
+markdown-preview.css includes the preview styles from OpenIDEA v0.1.46.
+Source: https://github.com/l0ng-ai/openidea/blob/v0.1.46/src/features/viewers/markdown/Markdown.module.css
+Changes: CSS module selectors are translated into ordinary selectors. Host-only layout and search highlights are omitted.
+
+code-highlight.ts includes the fenced code highlighting routine from OpenIDEA v0.1.46.
+Source: https://github.com/l0ng-ai/openidea/blob/v0.1.46/src/editor/lsp/markdown.ts
+Changes: only the language lookup, grammar parsing and highlight rendering are included.
+
+The Rust component uses the OpenIDEA Plugin SDK from the same OpenIDEA release.
+Source: https://github.com/l0ng-ai/openidea/tree/v0.1.46/sdk/rust/openidea-plugin
+Licensed under the Apache License, Version 2.0.
