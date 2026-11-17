@@ -99,6 +99,24 @@ function inputEventName(event) {
   return "input.type";
 }
 
+function growCodeFences({ fence, field, to }, changes) {
+  let length = fence.openLength;
+  // Tabs can count as fewer than four columns after a list or quote prefix.
+  for (const [, run] of field.value.matchAll(/^(?: {0,3}|[ \t]*\t[ \t]*)(`+|~+)[ \t]*$/gm)) {
+    if (run[0] === fence.marker) length = Math.max(length, run.length + 1);
+  }
+  const growth = length - fence.openLength;
+  if (!growth) return 0;
+
+  changes.unshift({ from: fence.openFrom, insert: fence.marker.repeat(growth) });
+  if (fence.closeLength && length > fence.closeLength) {
+    changes.push({ from: to + fence.closeGap, insert: fence.marker.repeat(length - fence.closeLength) });
+    fence.closeLength = length;
+  }
+  fence.openLength = length;
+  return growth;
+}
+
 function moveFieldCaret(field, event) {
   if (!(event.metaKey || event.altKey) || !/^Arrow/.test(event.key)) return false;
   const backward = event.key === "ArrowLeft" || event.key === "ArrowUp";
@@ -308,8 +326,10 @@ export function mountNativePreview(root, view, parser) {
     let end = before.length;
     let newEnd = insert.length;
     while (end > start && newEnd > start && before[end - 1] === insert[newEnd - 1]) { end--; newEnd--; }
-    dispatch({ from: edit.from + start, to: edit.from + end, insert: insert.slice(start, newEnd) },
-      inputEventName(event), edit.from + newEnd);
+    const changes = [{ from: edit.from + start, to: edit.from + end, insert: insert.slice(start, newEnd) }];
+    const growth = edit.fence ? growCodeFences(edit, changes) : 0;
+    dispatch(changes, inputEventName(event), edit.from + growth + newEnd);
+    edit.from += growth;
     edit.to = edit.from + insert.length;
     edit.last = insert;
   }
@@ -399,6 +419,14 @@ export function mountNativePreview(root, view, parser) {
     const scroll = pre.scrollLeft;
     const caret = restoredOffset ?? caretIn(code, point);
     const original = view.state.doc.sliceString(range.from, range.to);
+    const [open, close] = range.node.getChildren("CodeMark");
+    const fence = open && {
+      marker: view.state.doc.sliceString(open.from, open.from + 1),
+      openFrom: open.from,
+      openLength: open.to - open.from,
+      closeGap: close && close.from - range.to,
+      closeLength: close && close.to - close.from,
+    };
     const field = makeField("Edit code block", range.text);
     field.wrap = "off";
     const layer = document.createElement("div");
@@ -406,7 +434,7 @@ export function mountNativePreview(root, view, parser) {
     layer.style.lineHeight = document.defaultView.getComputedStyle(pre).lineHeight;
     code.before(layer);
     layer.append(code, field);
-    activate(field, { kind: "code", from: range.from, to: range.to, originalTo: range.to, last: original,
+    activate(field, { kind: "code", from: range.from, to: range.to, originalTo: range.to, last: original, fence,
       codeIndex: source.codeBlocks.indexOf(range) });
     view.dispatch({ selection: { anchor: range.from + Math.min(caret, original.length) },
       annotations: Transaction.addToHistory.of(false) });

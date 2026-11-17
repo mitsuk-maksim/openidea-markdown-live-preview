@@ -1,6 +1,6 @@
 id = "memitsuk.markdown-live-preview"
 name = "Markdown Live Preview"
-version = "0.5.26"
+version = "0.5.27"
 description = "Edit Markdown in one pane with OpenIDEA's preview rendering."
 authors = ["memitsuk"]
 categories = ["tools"]

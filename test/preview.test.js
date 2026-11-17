@@ -43,10 +43,10 @@ function clickAt(element, node, offset) {
   element.click();
 }
 
-function type(field, value) {
+function type(field, value, inputType) {
   if (field.tagName === "TEXTAREA") field.value = value;
   else field.textContent = value;
-  field.dispatchEvent(new window.InputEvent("input", { bubbles: true }));
+  field.dispatchEvent(new window.InputEvent("input", { bubbles: true, inputType }));
 }
 
 function press(field, key, options = {}) {
@@ -1085,6 +1085,95 @@ test("edits code inside a quote and an initially empty fence without changing th
     } finally {
       page.close();
     }
+  }
+});
+
+test("editing literal fence lines keeps a single code block and leaves the following paragraph outside", () => {
+  for (const [open, close, oldBody, value, newOpen, newClose, prefix] of [
+    ["```markdown", "```", "old", "before\nafter", "```markdown", "```", ""],
+    ["```markdown", "```", "old", "before\n```\nafter", "````markdown", "````", ""],
+    ["``` markdown", "```", "old", "before\n ````` \nafter", "`````` markdown", "``````", ""],
+    ["```markdown", "```", "", "before\n```\nafter", "````markdown", "````", ""],
+    ["~~~ markdown", "~~~~~~", "old", "before\n~~~~\nafter", "~~~~~ markdown", "~~~~~~", "> "],
+    ["```markdown", "```", "old", "before\n\t```\nafter", "````markdown", "````", "> "],
+    ["~~~markdown", "~~~", "", "before\n~~~~\nafter", "~~~~~markdown", "~~~~~", "> "],
+    ["  ```markdown", "```", "", "before\n````\nafter", "  `````markdown", "`````", "> "],
+    ["```markdown", "```", "", "before\n```\nafter", "````markdown", "````", "- "],
+    ["```markdown", "```", "old", "before ` `````\n~~~~~\n```text\n    `````\nafter", "```markdown", "```", ""],
+  ]) {
+    const continuation = prefix === "- " ? "  " : prefix;
+    const indent = /^ */.exec(open)[0];
+    const body = (text) => text ? text.split("\n").map((line) => continuation + indent + line).join("\n") + "\n" : "";
+    const original = `${prefix}${open}\n${body(oldBody)}${continuation}${close}\n\nFollowing paragraph`;
+    const expected = `${prefix}${newOpen}\n${body(value)}${continuation}${newClose}\n\nFollowing paragraph`;
+    const page = mount(original);
+    try {
+      const code = page.root.querySelector("pre > code");
+      if (oldBody) clickAt(code, code.firstChild, 0);
+      else press(code.parentElement, "Enter");
+      const field = document.activeElement;
+      assert.ok(field.matches("textarea[aria-label='Edit code block']"));
+      assert.equal(field.value, oldBody);
+      type(field, value, "insertFromPaste");
+      assert.equal(page.text(), expected);
+      assert.equal(document.activeElement, field);
+      assert.equal(field.selectionStart, value.length);
+      press(field, "Escape");
+      assert.equal(page.root.querySelectorAll("pre > code").length, 1);
+      assert.equal(page.root.querySelector("pre > code.language-markdown")?.textContent, value);
+      assert.equal(page.root.querySelector(":scope > [data-line] > p, :scope > p")?.textContent, "Following paragraph");
+      const tree = language.language.parser.parse(page.text());
+      assert.equal(tree.topNode.lastChild.name, "Paragraph");
+      let fences = 0;
+      tree.iterate({ enter(node) { if (node.name === "FencedCode") fences++; } });
+      assert.equal(fences, 1);
+    } finally {
+      page.close();
+    }
+  }
+});
+
+test("literal fence lines inside an unclosed block do not introduce a closing fence", () => {
+  const page = mount("> ~~~markdown\n> old\n\nOutside the quote");
+  try {
+    const code = page.root.querySelector("pre > code");
+    clickAt(code, code.firstChild, 0);
+    const field = document.activeElement;
+    type(field, "before\n~~~~\nafter", "insertFromPaste");
+    press(field, "Escape");
+    assert.equal(page.text(), "> ~~~~~markdown\n> before\n> ~~~~\n> after\n\nOutside the quote");
+    assert.equal(page.root.querySelector("blockquote pre > code")?.textContent, "before\n~~~~\nafter");
+    assert.equal(page.root.querySelector("p")?.textContent, "Outside the quote");
+  } finally {
+    page.close();
+  }
+});
+
+test("repeated fence growth keeps the active editor and Undo restores the body and both marks together", () => {
+  const original = "```markdown\nold\n```\n\nFollowing paragraph";
+  const page = mount(original);
+  try {
+    const code = page.root.querySelector("pre > code");
+    clickAt(code, code.firstChild, 3);
+    const field = document.activeElement;
+    const first = "````markdown\nold\n```\n````\n\nFollowing paragraph";
+    type(field, "old\n```", "insertFromPaste");
+    assert.equal(page.text(), first);
+    const second = "``````markdown\nold\n```\n`````\n``````\n\nFollowing paragraph";
+    type(field, "old\n```\n`````", "insertFromPaste");
+    assert.equal(page.text(), second);
+    assert.equal(document.activeElement, field);
+    assert.equal(field.selectionStart, field.value.length);
+    press(field, "z", { metaKey: true });
+    assert.equal(page.text(), first);
+    press(document.activeElement, "z", { metaKey: true });
+    assert.equal(page.text(), original);
+    press(document.activeElement, "z", { metaKey: true, shiftKey: true });
+    assert.equal(page.text(), first);
+    press(document.activeElement, "z", { metaKey: true, shiftKey: true });
+    assert.equal(page.text(), second);
+  } finally {
+    page.close();
   }
 });
 

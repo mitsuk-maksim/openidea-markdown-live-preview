@@ -153,7 +153,15 @@ function codeRange(element, node, doc) {
     if (node.name !== "FencedCode" || !open) return;
     const from = close ? doc.lineAt(close.from).from : node.to;
     const opening = doc.lineAt(open.from);
-    const prefix = doc.sliceString(opening.from, open.from);
+    let prefix = doc.sliceString(opening.from, open.from);
+    // A fence may open directly after a list marker. Its body needs the
+    // corresponding indentation on the continuation lines.
+    for (let parent = node.parent; parent && parent.from >= opening.from; parent = parent.parent) {
+      if (parent.name !== "ListItem") continue;
+      const marker = parent.getChild("ListMark");
+      prefix = prefix.slice(0, marker.from - opening.from) + " ".repeat(marker.to - marker.from) +
+        prefix.slice(marker.to - opening.from);
+    }
     return { element, from, to: from, text, sourcePosition: () => from, serialize: (value) => value ?
       (close ? "" : "\n") + value.split("\n").map((line) => prefix + line).join("\n") + (close ? "\n" : "") : "" };
   }
